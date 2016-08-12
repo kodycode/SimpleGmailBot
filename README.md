@@ -1,0 +1,2 @@
+# GmailBot
+Simple GMail bot

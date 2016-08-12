@@ -1,2 +1,4 @@
 # GmailBot
-Simple GMail bot
+Simple Gmail bot
+
+Intended for eductional purposes only.

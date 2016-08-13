@@ -4,10 +4,11 @@ import email
 import time
 
 import config
+from modules.owstats import OWStats
 
-def on_message(listen):
-    command = ''
+def on_message(server, listen):
     while (1):
+        command = ''
         listen.select(mailbox="Texts")
         typ, data = listen.search(None, 'UNSEEN', 'FROM', config.phone_address)
         for num in data[0].split():
@@ -19,6 +20,50 @@ def on_message(listen):
                 
         if (command == '!logout'):
             break;
+        elif (command.startswith('!ow rtopfive')):
+            battle_tag = command[13:].replace('#','-')
+
+            top_five = OWStats(battle_tag)
+            top_five.get_ranked_top_five_heroes()
+            top_five.get_ranked_top_five_heroes_hours()
+            top_five.display_ranked_top_five_heroes(server, config.bot_username, config.phone_address)
+            time.sleep(5)
+            
+        elif (command.startswith('!ow topfive')):
+            battle_tag = command[12:].replace('#','-')
+
+            top_five = OWStats(battle_tag)
+            top_five.get_top_five_heroes()
+            top_five.get_top_five_heroes_hours()
+            top_five.display_top_five_heroes(server, config.bot_username, config.phone_address)
+            time.sleep(5)
+            
+        elif (command.startswith('!ow competitive')):
+            battle_tag = command[16:].replace('#','-')
+
+            competitive = OWStats(battle_tag)
+            competitive.get_skill_rating()
+            competitive.get_level()
+            competitive.get_ranked_wins()
+            competitive.get_ranked_losses()
+            competitive.get_ranked_win_percentage()
+            competitive.get_ranked_time_played()
+            competitive.get_total_time_played()
+            competitive.display_ranked_info(server, config.bot_username, config.phone_address)
+            time.sleep(5)
+            
+        elif (command.startswith('!ow quick')):
+            battle_tag = command[10:].replace('#','-')
+
+            quick = OWStats(battle_tag)
+            quick.get_level()
+            quick.get_wins()
+            quick.get_losses()
+            quick.get_win_percentage()
+            quick.get_time_played()
+            quick.get_total_time_played()
+            quick.display_quick_info(server, config.bot_username, config.phone_address)
+            time.sleep(5)
         else:
             time.sleep(5)
 
@@ -30,9 +75,10 @@ def main():
     server.ehlo()
     server.login(config.bot_username, config.bot_password)
     listen.login(config.bot_username, config.bot_password)
+    print('Gmail Bot Online')
     server.sendmail(config.bot_username, config.phone_address, 'Kodybot ON')
 
-    on_message(listen)
+    on_message(server, listen)
     server.sendmail(config.bot_username, config.phone_address, 'Kodybot OFF')
     listen.close()
     listen.logout()

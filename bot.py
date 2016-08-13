@@ -6,7 +6,7 @@ import time
 import config
 from modules.owstats import OWStats
 
-def on_message(server, listen):
+def on_message(listen):
     while (1):
         command = ''
         listen.select(mailbox="Texts")
@@ -17,16 +17,33 @@ def on_message(server, listen):
             for message in body.get_payload():
                 command = str(message)[143:].replace('\n','')
                 print(command)
-                
-        if (command == '!logout'):
+        if (command.startswith('!logout')):
+            logout()
             break;
-        elif (command.startswith('!ow rtopfive')):
+        else:
+            process_commands(command)
+
+def logout():
+    server = smtplib.SMTP('smtp.gmail.com', port=587)
+    server.starttls()
+    server.login(config.bot_username, config.bot_password)
+
+    server.sendmail(config.bot_username, config.phone_address, 'Kodybot OFF')
+    server.quit()
+        
+def process_commands(command):                
+        server = smtplib.SMTP('smtp.gmail.com', port=587)
+        server.starttls()
+        server.login(config.bot_username, config.bot_password)
+        
+        if (command.startswith('!ow rtopfive')):
             battle_tag = command[13:].replace('#','-')
 
             top_five = OWStats(battle_tag)
             top_five.get_ranked_top_five_heroes()
             top_five.get_ranked_top_five_heroes_hours()
             top_five.display_ranked_top_five_heroes(server, config.bot_username, config.phone_address)
+            server.quit()
             time.sleep(5)
             
         elif (command.startswith('!ow topfive')):
@@ -36,6 +53,7 @@ def on_message(server, listen):
             top_five.get_top_five_heroes()
             top_five.get_top_five_heroes_hours()
             top_five.display_top_five_heroes(server, config.bot_username, config.phone_address)
+            server.quit()
             time.sleep(5)
             
         elif (command.startswith('!ow competitive')):
@@ -50,6 +68,7 @@ def on_message(server, listen):
             competitive.get_ranked_time_played()
             competitive.get_total_time_played()
             competitive.display_ranked_info(server, config.bot_username, config.phone_address)
+            server.quit()
             time.sleep(5)
             
         elif (command.startswith('!ow quick')):
@@ -63,25 +82,29 @@ def on_message(server, listen):
             quick.get_time_played()
             quick.get_total_time_played()
             quick.display_quick_info(server, config.bot_username, config.phone_address)
+            server.quit()
+            time.sleep(5)
+        elif (command != ''):
+            server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')
+            server.quit()
             time.sleep(5)
         else:
+            server.quit()
             time.sleep(5)
+        
 
 def main():
     listen = imaplib.IMAP4_SSL('imap.gmail.com', port=993)
     server = smtplib.SMTP('smtp.gmail.com', port=587)
-    server.ehlo()
     server.starttls()
-    server.ehlo()
     server.login(config.bot_username, config.bot_password)
     listen.login(config.bot_username, config.bot_password)
     print('Gmail Bot Online')
     server.sendmail(config.bot_username, config.phone_address, 'Kodybot ON')
+    server.quit()
 
-    on_message(server, listen)
-    server.sendmail(config.bot_username, config.phone_address, 'Kodybot OFF')
+    on_message(listen)
     listen.close()
     listen.logout()
-    server.quit()
 
 main()

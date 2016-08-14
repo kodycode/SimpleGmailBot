@@ -5,6 +5,21 @@ import time
 
 import config
 from modules.owstats import OWStats
+from modules.lolrank import LOLRank
+
+def on_listen():
+    listen = imaplib.IMAP4_SSL('imap.gmail.com', port=993)
+    listen.login(config.bot_username, config.bot_password)
+
+    return listen
+    
+def on_login():
+    server = smtplib.SMTP('smtp.gmail.com', port=587)
+    server.starttls()
+    server.login(config.bot_username, config.bot_password)
+    server.sendmail(config.bot_username, config.phone_address, 'Kodybot ON')
+    print('Gmail Bot Online')
+    server.quit()
 
 def on_message(listen):
     while (1):
@@ -22,6 +37,10 @@ def on_message(listen):
             break;
         else:
             process_commands(command)
+
+def on_exit(listen):
+    listen.close()
+    listen.logout()
 
 def logout():
     server = smtplib.SMTP('smtp.gmail.com', port=587)
@@ -43,8 +62,6 @@ def process_commands(command):
             top_five.get_ranked_top_five_heroes()
             top_five.get_ranked_top_five_heroes_hours()
             top_five.display_ranked_top_five_heroes(server, config.bot_username, config.phone_address)
-            server.quit()
-            time.sleep(5)
             
         elif (command.startswith('!ow topfive')):
             battle_tag = command[12:].replace('#','-')
@@ -53,8 +70,6 @@ def process_commands(command):
             top_five.get_top_five_heroes()
             top_five.get_top_five_heroes_hours()
             top_five.display_top_five_heroes(server, config.bot_username, config.phone_address)
-            server.quit()
-            time.sleep(5)
             
         elif (command.startswith('!ow competitive')):
             battle_tag = command[16:].replace('#','-')
@@ -68,8 +83,6 @@ def process_commands(command):
             competitive.get_ranked_time_played()
             competitive.get_total_time_played()
             competitive.display_ranked_info(server, config.bot_username, config.phone_address)
-            server.quit()
-            time.sleep(5)
             
         elif (command.startswith('!ow quick')):
             battle_tag = command[10:].replace('#','-')
@@ -82,29 +95,30 @@ def process_commands(command):
             quick.get_time_played()
             quick.get_total_time_played()
             quick.display_quick_info(server, config.bot_username, config.phone_address)
-            server.quit()
-            time.sleep(5)
+            
+        elif (command.startswith('!rank')):
+            summoner_name = command[6:]
+        
+            try:
+                rank = LOLRank(summoner_name)
+                rank.get_ranked_data()
+                rank.summoner = summoner_name
+            
+                rank.display_ranked_data(server, config.bot_username, config.phone_address)
+            except KeyError:
+                server.sendmail(config.bot_username, config.phone_address, 'ERROR! No ranked stats found for this player')
+                
         elif (command != ''):
             server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')
-            server.quit()
-            time.sleep(5)
-        else:
-            server.quit()
-            time.sleep(5)
+            
+        server.quit()
+        time.sleep(5)
         
 
 def main():
-    listen = imaplib.IMAP4_SSL('imap.gmail.com', port=993)
-    server = smtplib.SMTP('smtp.gmail.com', port=587)
-    server.starttls()
-    server.login(config.bot_username, config.bot_password)
-    listen.login(config.bot_username, config.bot_password)
-    print('Gmail Bot Online')
-    server.sendmail(config.bot_username, config.phone_address, 'Kodybot ON')
-    server.quit()
-
+    listen = on_listen()
+    on_login()
     on_message(listen)
-    listen.close()
-    listen.logout()
+    on_exit(listen)
 
 main()

@@ -6,7 +6,6 @@ import time
 import config
 from modules.owstats import OWStats
 from modules.lolrank import LOLRank
-from modules.twilio import Twilio
 
 def on_listen():
     listen = imaplib.IMAP4_SSL('imap.gmail.com', port=993)
@@ -130,13 +129,15 @@ def process_commands(command):
                 server.sendmail(config.bot_username, config.phone_address, 'ERROR! No ranked stats found for this player. Please ' +
                                 'check if you have the correct spelling of the player and a valid API key.')
 
-        elif (command.startswith('!send')):
-            target_number = command.split(' ', 2)[1]
-            message = command.split(' ', 2)[2]
+        #On hold for now
+
+        #elif (command.startswith('!send')):
+        #    target_number = command.split(' ', 2)[1]
+        #    message = command.split(' ', 2)[2]
  
-            send = Twilio(config.twilio_sid, config.twilio_auth, target_number, message)
-            send.lookup()
-            send.send(server, config.bot_username) 
+        #    send = Twilio(config.twilio_sid, config.twilio_auth, target_number, message)
+        #    send.lookup()
+        #    send.send(server, config.bot_username) 
                 
         elif (command != ''):
             server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')

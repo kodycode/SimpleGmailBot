@@ -1,4 +1,4 @@
 # GmailBot
 Simple Gmail bot
 
-Intended for eductional purposes only.
+Intended for educational purposes only.

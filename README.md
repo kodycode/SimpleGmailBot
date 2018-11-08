@@ -1,4 +1,4 @@
-# GmailBot
+# SimpleGmailBot
 Simple Gmail Bot
 
 It relays messages to and from a phone number and to the email address based on the specified contents in `config.py`. Basic functionality of the bot includes telling the phone number that the gmail bot is online, and can respond with `Pong!` upon texting a message to the gmail account with `!ping`.

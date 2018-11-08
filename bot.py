@@ -2,14 +2,12 @@ import smtplib
 import imaplib
 import email
 import time
-
 import config
 
 
 def on_listen():
     listen = imaplib.IMAP4_SSL('imap.gmail.com', port=993)
     listen.login(config.bot_username, config.bot_password)
-
     return listen
 
 
@@ -25,7 +23,7 @@ def on_login():
 def on_message(listen):
     while (1):
         command = ''
-        listen.select(mailbox="Texts")
+        listen.select(mailbox="Inbox")
         typ, data = listen.search(None, 'UNSEEN', 'FROM', config.phone_address)
         for num in data[0].split():
             typ, data = listen.fetch(num, '(RFC822)')
@@ -55,15 +53,15 @@ def logout():
 
 
 def process_commands(command):
-        server = smtplib.SMTP('smtp.gmail.com', port=587)
-        server.starttls()
-        server.login(config.bot_username, config.bot_password)
+    server = smtplib.SMTP('smtp.gmail.com', port=587)
+    server.starttls()
+    server.login(config.bot_username, config.bot_password)
 
-        if (command != ''):
-            server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')
+    if (command != ''):
+        server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')
 
-        server.quit()
-        time.sleep(5)
+    server.quit()
+    time.sleep(5)
 
 
 def main():

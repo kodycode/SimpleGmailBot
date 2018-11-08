@@ -28,13 +28,12 @@ def on_message(listen):
         for num in data[0].split():
             typ, data = listen.fetch(num, '(RFC822)')
             body = email.message_from_bytes(data[0][1])
-            for message in body.get_payload():
-                command = str(message)[143:].replace('\n', '')
-                print(command)
+            message = body.get_payload()
+            command = message.replace('\n', '')
         if (command.startswith('!logout')):
             logout()
             break
-        else:
+        elif (len(command)):
             process_commands(command)
 
 
@@ -57,11 +56,12 @@ def process_commands(command):
     server.starttls()
     server.login(config.bot_username, config.bot_password)
 
-    if (command != ''):
+    if (command.lower().startswith('!ping')):
+	    server.sendmail(config.bot_username, config.phone_address, 'Pong!')
+    else:
         server.sendmail(config.bot_username, config.phone_address, 'Invalid command?')
 
     server.quit()
-    time.sleep(5)
 
 
 def main():
